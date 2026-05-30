@@ -23,10 +23,11 @@ def test_energy_stays_finite(stepped):
     assert np.isfinite(e) and e > 0, "energy blew up / vanished"
 
 
-def test_rod_stays_centered(stepped):
+def test_rod_position_fixed(stepped):
     s, _ = stepped
     st = s.stats()
-    assert st["xc"] == s.L / 2 and st["yc"] == s.L / 2, "rod left the centre"
+    # Rod is pinned 1/4 in from the upstream (left) edge, centred in y.
+    assert st["xc"] == s.L / 4 and st["yc"] == s.L / 2, "rod moved from its fixed spot"
 
 
 @pytest.mark.parametrize("name", FIELD_NAMES)

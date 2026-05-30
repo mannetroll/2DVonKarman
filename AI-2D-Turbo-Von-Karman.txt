@@ -1,5 +1,5 @@
 Create a 2D-Turbulence solver in Python = 3.13, in a root package named turbosim.
-with a PySide6 GUI showing the changing Vorticity field using Inferno, Gray or Ocean colors,
+with a PySide6 GUI showing the changing Vorticity field using Ocean, Gray or Inferno colors,
 with controls and statistics grouped in a nice clear way.
 Make a fancy black GUI with no flickering numerical data.
 

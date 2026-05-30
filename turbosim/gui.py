@@ -13,7 +13,9 @@ import time
 
 import numpy as np
 from PySide6.QtCore import Qt, QThread, Signal
-from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPen, QPixmap
+from PySide6.QtGui import (
+    QColor, QFont, QFontDatabase, QImage, QPainter, QPen, QPixmap,
+)
 from PySide6.QtWidgets import (
     QApplication, QComboBox, QFrame, QGridLayout, QGroupBox, QHBoxLayout,
     QLabel, QPushButton, QSlider, QSpinBox, QVBoxLayout, QWidget,
@@ -79,7 +81,7 @@ class SimWorker(QThread):
 # ----------------------------------------------------------------- main window
 DARK_QSS = """
 QWidget { background: #0b0b0d; color: #d8d8de;
-          font-family: 'SF Mono','Menlo','Consolas',monospace; font-size: 12px; }
+          font-family: 'Menlo','Consolas','DejaVu Sans Mono',monospace; font-size: 12px; }
 QGroupBox { border: 1px solid #26262e; border-radius: 8px; margin-top: 16px;
             padding: 10px 8px 8px 8px; background: #101015; }
 QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 4px;
@@ -109,7 +111,7 @@ class MainWindow(QWidget):
         self.resize(1180, 820)
 
         self.worker: SimWorker | None = None
-        self._table = self._qt_table(colormap("Inferno"))
+        self._table = self._qt_table(colormap("Ocean"))
         self._last_stats: dict = {}
 
         self._build_ui()
@@ -214,6 +216,7 @@ class MainWindow(QWidget):
 
         self.cb_cmap = QComboBox()
         self.cb_cmap.addItems(COLORMAP_NAMES)
+        self.cb_cmap.setCurrentText("Ocean")
         self.cb_cmap.currentTextChanged.connect(self._on_cmap)
 
         self.cb_skip = QComboBox()
@@ -286,9 +289,9 @@ class MainWindow(QWidget):
         self.lb_R.setText(f"{2 * np.pi / v:.3f}")  # applied on Restart
 
     def _on_vr(self, v: int) -> None:
-        self.lb_vr.setText(f"{v / 10:.1f}")
+        self.lb_vr.setText(str(v))
         if self.worker:
-            self.worker.solver.vr = v / 10.0
+            self.worker.solver.vr = float(v)
 
     def _on_field(self, name: str) -> None:
         if self.worker:
@@ -320,7 +323,7 @@ class MainWindow(QWidget):
             cfl=self.sl_cfl.value() / 100.0,
             k0=self.sl_k0.value(),
             NR=float(self.sp_NR.value()),
-            vr=self.sl_vr.value() / 10.0,
+            vr=float(self.sl_vr.value()),
         )
         # Refresh derived labels.
         self._on_cfl(self.sl_cfl.value())
@@ -384,9 +387,26 @@ class MainWindow(QWidget):
         super().closeEvent(event)
 
 
+def _mono_font(size: int = 10) -> QFont:
+    """First installed monospace family from our preference list.
+
+    Picking a family that actually exists avoids Qt's costly font-alias scan
+    (and the "missing font family" warning) for names like 'SF Mono'.
+    """
+    installed = set(QFontDatabase.families())
+    font = QFont()
+    font.setPointSize(size)
+    for fam in ("SF Mono", "Menlo", "Consolas", "DejaVu Sans Mono"):
+        if fam in installed:
+            font.setFamily(fam)
+            break
+    font.setStyleHint(QFont.Monospace)
+    return font
+
+
 def run() -> int:
     app = QApplication.instance() or QApplication([])
-    app.setFont(QFont("SF Mono", 10))
+    app.setFont(_mono_font(10))
     win = MainWindow()
     win.show()
     return app.exec()

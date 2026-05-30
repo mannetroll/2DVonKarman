@@ -50,10 +50,10 @@ class Solver:
         self,
         N: int = 512,
         Re: float = 10_000.0,
-        cfl: float = 1.5,
+        cfl: float = 2.5,
         k0: int = 5,
-        NR: float = 5.0,
-        vr: float = 0.1,
+        NR: float = 10.0,
+        vr: float = 10.0,
         L: float = TWO_PI,
         seed: int | None = 1234,
         workers: int = -1,
@@ -83,9 +83,10 @@ class Solver:
         self.step_count = 0
         self.last_dt = 0.0
 
-        # Rod is held fixed at the domain centre (rod reference frame); the
-        # free-stream (vr, 0) flows horizontally past it.
-        self.xc = self.L / 2.0
+        # Rod is held fixed in the rod reference frame; the free-stream (vr, 0)
+        # flows horizontally past it.  Placed 1/4 in from the upstream (left)
+        # edge so ~3/4 of the periodic domain downstream is free for the wake.
+        self.xc = self.L / 4.0
         self.yc = self.L / 2.0
 
         self._setup_grid()

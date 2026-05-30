@@ -35,10 +35,10 @@ color table is applied, and a `QPixmap` is built from it.
 |---|---|
 | `N` | 512, 1024, 2048 spectral nodes (3/2 padding) |
 | `Re` | default 10000 (`Visc = 1/Re`) |
-| `CFL` | 0.5 – 2.5 (default 1.5) |
+| `CFL` | 0.5 – 3.5 (default 2.5) |
 | `K0` | 1 – 25, initial field peak wavenumber (default 5) |
-| `NR` | rod radius `R` from `2*pi = NR * R` (default 5) |
-| `VR` | 0.1 – 10, horizontal free-stream speed in `2*pi/sec` (default 0.1) |
+| `NR` | rod radius `R` from `2*pi = NR * R` (default 10) |
+| `VR` | 1 – 100, horizontal free-stream speed in `2*pi/sec` (default 10) |
 | Field | Vorticity, Energy, U-Velocity, V-Velocity, Stream function |
 | Colors | Inferno, Gray, Ocean |
 | Frame / n steps | 2, 5, 10, 20, 50 |
