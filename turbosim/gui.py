@@ -164,7 +164,7 @@ class MainWindow(QWidget):
         self.sp_Re.setSingleStep(1000)
         self.sp_Re.setValue(10_000)
 
-        self.sl_cfl, self.lb_cfl = self._slider(50, 250, 150, self._on_cfl)
+        self.sl_cfl, self.lb_cfl = self._slider(50, 350, 250, self._on_cfl)
         self.sl_k0, self.lb_k0 = self._slider(1, 25, 5, self._on_k0)
 
         lay.addWidget(QLabel("N (nodes)"), 0, 0)
@@ -186,10 +186,10 @@ class MainWindow(QWidget):
 
         self.sp_NR = QSpinBox()
         self.sp_NR.setRange(1, 50)
-        self.sp_NR.setValue(5)
+        self.sp_NR.setValue(10)
         self.sp_NR.valueChanged.connect(self._on_nr)
 
-        self.sl_vr, self.lb_vr = self._slider(1, 100, 1, self._on_vr)  # /10
+        self.sl_vr, self.lb_vr = self._slider(1, 100, 10, self._on_vr)
 
         self.lb_R = QLabel("-")
         self.lb_R.setObjectName("statval")

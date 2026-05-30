@@ -12,10 +12,13 @@ Vorticity-streamfunction formulation on a doubly-periodic square domain
   viscous term is integrated implicitly (Crank-Nicolson inside each substage),
   the nonlinear term explicitly.  Only the previous substage's nonlinear
   evaluation is stored (low storage).
-* A **moving cylindrical rod** (a disk of radius ``R``) is imposed through
-  volume penalization, applied as an exact, unconditionally-stable
-  operator-splitting velocity relaxation after each full step.  No turbulent
-  forcing is added: left alone the flow simply decays.
+* A **cylindrical rod** (a disk of radius ``R``) is imposed through volume
+  penalization, applied as an exact, unconditionally-stable operator-splitting
+  velocity relaxation after each full step.  We work in the **rod's reference
+  frame**: the rod is held fixed at the domain centre and a uniform
+  **horizontal** free-stream ``(vr, 0)`` flows past it, which is exactly
+  equivalent to the rod translating horizontally through otherwise still fluid
+  (the classic von Karman flow-past-cylinder).  No turbulent forcing is added.
 * All FFTs use ``scipy.fft`` with ``workers=-1`` (multithreaded).
 """
 
@@ -63,7 +66,7 @@ class Solver:
         self.cfl = float(cfl)
         self.k0 = int(k0)
         self.NR = float(NR)
-        self.vr = float(vr)         # rod velocity (vertical, +y) in (2*pi/sec)
+        self.vr = float(vr)         # free-stream speed (horizontal, +x) in (2*pi/sec)
         self.L = float(L)
         self.workers = int(workers)
 
@@ -80,10 +83,10 @@ class Solver:
         self.step_count = 0
         self.last_dt = 0.0
 
-        # Rod path: fixed x, moves vertically (periodic) at speed vr.
+        # Rod is held fixed at the domain centre (rod reference frame); the
+        # free-stream (vr, 0) flows horizontally past it.
         self.xc = self.L / 2.0
-        self.yc0 = self.L / 2.0
-        self.yc = self.yc0
+        self.yc = self.L / 2.0
 
         self._setup_grid()
         self._init_vorticity(seed)
@@ -164,9 +167,13 @@ class Solver:
 
     # --------------------------------------------------------------- dynamics
     def _nonlinear(self, omega_hat: np.ndarray) -> np.ndarray:
-        """Explicit RHS: ``-(u . grad) omega`` with 3/2 de-aliasing."""
+        """Explicit RHS: ``-(u . grad) omega`` with 3/2 de-aliasing.
+
+        The advecting velocity is the *total* velocity, i.e. the vortical part
+        plus the uniform horizontal free-stream ``(vr, 0)``.
+        """
         u_hat, v_hat = self._velocities(omega_hat)
-        u = self._to_phys_padded(u_hat)
+        u = self._to_phys_padded(u_hat) + self.vr
         v = self._to_phys_padded(v_hat)
         ox = self._to_phys_padded(1j * self.KX * omega_hat)
         oy = self._to_phys_padded(1j * self.KY * omega_hat)
@@ -174,15 +181,17 @@ class Solver:
         n_hat[0, 0] = 0.0
         return n_hat
 
-    def _rod_mask(self, yc: float) -> np.ndarray:
+    def _rod_mask(self) -> np.ndarray:
         """Smoothed indicator of the disk centered at ``(xc, yc)`` (periodic)."""
         dx = (self.X - self.xc + self.L / 2) % self.L - self.L / 2
-        dy = (self.Y - yc + self.L / 2) % self.L - self.L / 2
+        dy = (self.Y - self.yc + self.L / 2) % self.L - self.L / 2
         r = np.sqrt(dx * dx + dy * dy)
         return 0.5 * (1.0 - np.tanh((r - self.R) / self.delta))
 
     def _compute_dt(self, u: np.ndarray, v: np.ndarray) -> float:
-        vel = float(np.abs(u).max() + np.abs(v).max()) + abs(self.vr) + 1e-9
+        """Advective CFL from the *total* velocity (``u``, ``v`` already include
+        the free-stream)."""
+        vel = float(np.abs(u).max() + np.abs(v).max()) + 1e-9
         dt = self.cfl * self.dxg / (np.pi * vel)
         return min(dt, self.dt_cap)
 
@@ -190,15 +199,14 @@ class Solver:
         """Advance one full time step."""
         nu, K2 = self.nu, self.K2
 
-        # Time step from the current velocity field (advective CFL).
+        # Time step from the current total velocity field (advective CFL).
         u_hat, v_hat = self._velocities(self.omega_hat)
-        u = fft.irfft2(u_hat, s=(self.N, self.N), workers=self.workers)
+        u = fft.irfft2(u_hat, s=(self.N, self.N), workers=self.workers) + self.vr
         v = fft.irfft2(v_hat, s=(self.N, self.N), workers=self.workers)
         dt = self._compute_dt(u, v)
 
-        # Rod position for this step (moves vertically, periodic wrap).
-        self.yc = (self.yc0 + self.vr * self.time) % self.L
-        chi = self._rod_mask(self.yc)
+        # Rod is fixed at the domain centre (rod reference frame).
+        chi = self._rod_mask()
 
         # --- LS-IMEX-RK3 advance of the pure decaying Navier-Stokes -------
         w = self.omega_hat
@@ -214,13 +222,16 @@ class Solver:
         self.omega_hat = w
 
         # --- Volume penalization (exact relaxation, operator split) -------
-        # u <- u_solid + (u - u_solid) * exp(-pen * chi); solid = (0, vr).
+        # In the rod frame the rod is stationary, so the *total* velocity
+        # (vortical part + free-stream) relaxes to zero inside the disk:
+        #   u_tot <- u_tot * exp(-pen * chi),  then subtract the free-stream
+        #   back out to recover the vortical part the spectral code carries.
         u_hat, v_hat = self._velocities(self.omega_hat)
-        u = fft.irfft2(u_hat, s=(self.N, self.N), workers=self.workers)
+        u = fft.irfft2(u_hat, s=(self.N, self.N), workers=self.workers) + self.vr
         v = fft.irfft2(v_hat, s=(self.N, self.N), workers=self.workers)
         f = np.exp(-self.pen_strength * chi)
-        u *= f
-        v = self.vr + (v - self.vr) * f
+        u = u * f - self.vr
+        v *= f
         u_hat = fft.rfft2(u, workers=self.workers)
         v_hat = fft.rfft2(v, workers=self.workers)
         # Recover vorticity (curl) -- discards the penalization divergence.
@@ -239,13 +250,15 @@ class Solver:
         if name == "Stream function":
             return fft.irfft2(self.K2inv * self.omega_hat, s=(self.N, self.N),
                               workers=self.workers)
+        # U-Velocity and Energy show the *total* flow (incl. the free-stream);
+        # V-Velocity has no free-stream component.
         u_hat, v_hat = self._velocities(self.omega_hat)
         if name == "U-Velocity":
-            return fft.irfft2(u_hat, s=(self.N, self.N), workers=self.workers)
+            return fft.irfft2(u_hat, s=(self.N, self.N), workers=self.workers) + self.vr
         if name == "V-Velocity":
             return fft.irfft2(v_hat, s=(self.N, self.N), workers=self.workers)
         if name == "Energy":
-            u = fft.irfft2(u_hat, s=(self.N, self.N), workers=self.workers)
+            u = fft.irfft2(u_hat, s=(self.N, self.N), workers=self.workers) + self.vr
             v = fft.irfft2(v_hat, s=(self.N, self.N), workers=self.workers)
             return 0.5 * (u * u + v * v)
         raise ValueError(f"unknown field {name!r}")

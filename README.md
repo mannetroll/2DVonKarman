@@ -1,8 +1,10 @@
 # turbosim
 
 A 2D **decaying turbulence** pseudo-spectral solver with a fancy black PySide6 GUI,
-simulating Navier-Stokes flow decaying around a **moving cylindrical rod** (a
-von Karman-style obstacle).
+simulating Navier-Stokes flow around a **cylindrical rod** held fixed at the
+domain centre, with a uniform **horizontal free-stream** flowing past it — i.e.
+the rod's own reference frame as it translates horizontally (a von Karman-style
+obstacle / vortex street).
 
 ## Run
 
@@ -17,7 +19,8 @@ uv run simulation
 - Pseudo-spectral nonlinear term with **3/2 zero-padding** de-aliasing.
 - **LS-IMEX-RK3** time stepping: viscous term implicit (Crank-Nicolson per
   substage), advection explicit, low storage.
-- Moving rod via **volume penalization** (exact relaxation, operator-split).
+- Centred rod via **volume penalization** (exact relaxation, operator-split);
+  solved in the rod frame with a uniform horizontal free-stream `(VR, 0)`.
 - All FFTs use `scipy.fft` with `workers=-1` (multithreaded).
 
 ## Fast rendering
@@ -35,7 +38,7 @@ color table is applied, and a `QPixmap` is built from it.
 | `CFL` | 0.5 – 2.5 (default 1.5) |
 | `K0` | 1 – 25, initial field peak wavenumber (default 5) |
 | `NR` | rod radius `R` from `2*pi = NR * R` (default 5) |
-| `VR` | 0.1 – 10, rod vertical speed in `2*pi/sec` (default 0.1) |
+| `VR` | 0.1 – 10, horizontal free-stream speed in `2*pi/sec` (default 0.1) |
 | Field | Vorticity, Energy, U-Velocity, V-Velocity, Stream function |
 | Colors | Inferno, Gray, Ocean |
 | Frame / n steps | 2, 5, 10, 20, 50 |
