@@ -15,10 +15,12 @@ dependencies = [
     "PySide6>=6.7",
 ]
 
+# Optional GPU extra
 [project.optional-dependencies]
-# GPU backend (NVIDIA, e.g. RTX 3090). CUDA 12.x wheel; use cupy-cuda11x for
-# CUDA 11. Install on a GPU box with:  uv sync --extra gpu
-gpu = ["cupy-cuda12x>=13.0"]
+cuda = [
+  "cupy-cuda13x>=14.0.1; sys_platform != 'darwin'",
+  "fastrlock>=0.8; sys_platform != 'darwin'"
+]
 
 [project.scripts]
 simulation = "turbosim.app:main"
