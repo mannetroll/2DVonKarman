@@ -53,7 +53,7 @@ color table is applied, and a `QPixmap` is built from it.
 | `Re` | default 10000 (`Visc = 1/Re`) |
 | `CFL` | 0.5 – 3.5 (default 2.5) |
 | `K0` | 1 – 25, initial field peak wavenumber (default 5) |
-| `NR` | rod radius `R` from `2*pi = NR * R` (default 10) |
+| `NR` | 2 – 100, rod radius `R` from `2*pi = NR * R` (default 15) |
 | `VR` | 1 – 100, horizontal free-stream speed in `2*pi/sec` (default 10) |
 | Field | Vorticity, Energy, U-Velocity, V-Velocity, Stream function |
 | Colors | Inferno, Gray, Ocean |

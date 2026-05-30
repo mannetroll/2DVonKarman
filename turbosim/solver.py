@@ -66,7 +66,7 @@ class Solver:
         Re: float = 10_000.0,
         cfl: float = 2.5,
         k0: int = 5,
-        NR: float = 10.0,
+        NR: float = 15.0,
         vr: float = 10.0,
         L: float = TWO_PI,
         seed: int | None = 1234,

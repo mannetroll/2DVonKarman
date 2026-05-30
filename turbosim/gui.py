@@ -197,8 +197,8 @@ class MainWindow(QWidget):
         lay.setVerticalSpacing(8)
 
         self.sp_NR = QSpinBox()
-        self.sp_NR.setRange(1, 50)
-        self.sp_NR.setValue(10)
+        self.sp_NR.setRange(2, 100)
+        self.sp_NR.setValue(15)
         self.sp_NR.valueChanged.connect(self._on_nr)
 
         self.sl_vr, self.lb_vr = self._slider(1, 100, 10, self._on_vr)
