@@ -168,7 +168,7 @@ class MainWindow(QWidget):
         self.sp_Re.setSingleStep(1000)
         self.sp_Re.setValue(200)
 
-        self.sl_cfl, self.lb_cfl = self._slider(50, 350, 250, self._on_cfl)
+        self.sl_cfl, self.lb_cfl = self._slider(50, 350, 210, self._on_cfl)
         self.sl_k0, self.lb_k0 = self._slider(0, 25, 2, self._on_k0)
 
         # Compute backend: Auto picks the GPU (CuPy) if one is present, else CPU.
@@ -229,6 +229,7 @@ class MainWindow(QWidget):
         self.cb_skip = QComboBox()
         self.cb_skip.addItems([str(s) for s in FRAMESKIP_OPTIONS])
         self.cb_skip.currentTextChanged.connect(self._on_skip)
+        self.cb_skip.setCurrentText("5")
 
         lay.addWidget(QLabel("Field"), 0, 0)
         lay.addWidget(self.cb_field, 0, 1)
