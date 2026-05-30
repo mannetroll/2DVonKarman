@@ -196,18 +196,15 @@ class MainWindow(QWidget):
         lay = QGridLayout(g)
         lay.setVerticalSpacing(8)
 
-        self.sp_NR = QSpinBox()
-        self.sp_NR.setRange(2, 100)
-        self.sp_NR.setValue(15)
-        self.sp_NR.valueChanged.connect(self._on_nr)
-
-        self.sl_vr, self.lb_vr = self._slider(1, 100, 30, self._on_vr)
+        self.sl_NR, self.lb_NR = self._slider(2, 50, 25, self._on_nr)
+        self.sl_vr, self.lb_vr = self._slider(0, 30, 10, self._on_vr)
 
         self.lb_R = QLabel("-")
         self.lb_R.setObjectName("statval")
 
         lay.addWidget(QLabel("NR (2pi=NR*R)"), 0, 0)
-        lay.addWidget(self.sp_NR, 0, 1, 1, 2)
+        lay.addWidget(self.sl_NR, 0, 1)
+        lay.addWidget(self.lb_NR, 0, 2)
         lay.addWidget(QLabel("VR (2pi/s)"), 1, 0)
         lay.addWidget(self.sl_vr, 1, 1)
         lay.addWidget(self.lb_vr, 1, 2)
@@ -296,6 +293,7 @@ class MainWindow(QWidget):
         self.lb_k0.setText(str(v))  # applied on Restart
 
     def _on_nr(self, v: int) -> None:
+        self.lb_NR.setText(str(v))
         self.lb_R.setText(f"{2 * np.pi / v:.3f}")  # applied on Restart
 
     def _on_vr(self, v: int) -> None:
@@ -328,7 +326,7 @@ class MainWindow(QWidget):
             Re=float(self.sp_Re.value()),
             cfl=self.sl_cfl.value() / 100.0,
             k0=self.sl_k0.value(),
-            NR=float(self.sp_NR.value()),
+            NR=float(self.sl_NR.value()),
             vr=float(self.sl_vr.value()),
             backend=backend,
         )
@@ -349,6 +347,7 @@ class MainWindow(QWidget):
         # Refresh derived labels.
         self._on_cfl(self.sl_cfl.value())
         self._on_k0(self.sl_k0.value())
+        self._on_nr(self.sl_NR.value())
         self._on_vr(self.sl_vr.value())
         self.lb_R.setText(f"{solver.R:.3f}")
         self.setWindowTitle(f"turbosim - 2D decaying turbulence [{solver.backend.upper()}]")
