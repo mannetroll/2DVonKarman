@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QLabel, QPushButton, QSlider, QSpinBox, QVBoxLayout, QWidget,
 )
 
+from turbosim.backend import gpu_available
 from turbosim.colormaps import COLORMAP_NAMES, colormap
 from turbosim.render import display_limits, to_uint8
 from turbosim.solver import FIELD_NAMES, Solver
@@ -169,6 +170,12 @@ class MainWindow(QWidget):
         self.sl_cfl, self.lb_cfl = self._slider(50, 350, 250, self._on_cfl)
         self.sl_k0, self.lb_k0 = self._slider(1, 25, 5, self._on_k0)
 
+        # Compute backend: Auto picks the GPU (CuPy) if one is present, else CPU.
+        self.cb_backend = QComboBox()
+        self.cb_backend.addItems(["Auto", "CPU", "GPU"])
+        if not gpu_available():
+            self.cb_backend.model().item(2).setEnabled(False)  # grey out GPU
+
         lay.addWidget(QLabel("N (nodes)"), 0, 0)
         lay.addWidget(self.cb_N, 0, 1, 1, 2)
         lay.addWidget(QLabel("Re"), 1, 0)
@@ -179,6 +186,8 @@ class MainWindow(QWidget):
         lay.addWidget(QLabel("K0 (init)"), 3, 0)
         lay.addWidget(self.sl_k0, 3, 1)
         lay.addWidget(self.lb_k0, 3, 2)
+        lay.addWidget(QLabel("Compute"), 4, 0)
+        lay.addWidget(self.cb_backend, 4, 1, 1, 2)
         return g
 
     def _rod_group(self) -> QGroupBox:
@@ -312,24 +321,36 @@ class MainWindow(QWidget):
         self.btn_pause.setText("Resume" if paused else "Pause")
 
     # ----- lifecycle -----
-    def build_and_start(self) -> None:
-        if self.worker is not None:
-            self.worker.stop()
-            self.worker = None
-
-        solver = Solver(
+    def _make_solver(self, backend: str) -> Solver:
+        return Solver(
             N=int(self.cb_N.currentText()),
             Re=float(self.sp_Re.value()),
             cfl=self.sl_cfl.value() / 100.0,
             k0=self.sl_k0.value(),
             NR=float(self.sp_NR.value()),
             vr=float(self.sl_vr.value()),
+            backend=backend,
         )
+
+    def build_and_start(self) -> None:
+        if self.worker is not None:
+            self.worker.stop()
+            self.worker = None
+
+        backend = self.cb_backend.currentText().lower()  # "auto" / "cpu" / "gpu"
+        try:
+            solver = self._make_solver(backend)
+        except Exception as exc:  # e.g. GPU requested but CuPy/CUDA missing
+            print(f"[turbosim] {backend!r} backend failed ({exc}); using CPU.")
+            self.cb_backend.setCurrentText("CPU")
+            solver = self._make_solver("cpu")
+
         # Refresh derived labels.
         self._on_cfl(self.sl_cfl.value())
         self._on_k0(self.sl_k0.value())
         self._on_vr(self.sl_vr.value())
         self.lb_R.setText(f"{solver.R:.3f}")
+        self.setWindowTitle(f"turbosim - 2D decaying turbulence [{solver.backend.upper()}]")
 
         self.worker = SimWorker(solver)
         self.worker.frameskip = int(self.cb_skip.currentText())

@@ -21,7 +21,23 @@ uv run simulation
   substage), advection explicit, low storage.
 - Centred rod via **volume penalization** (exact relaxation, operator-split);
   solved in the rod frame with a uniform horizontal free-stream `(VR, 0)`.
-- All FFTs use `scipy.fft` with `workers=-1` (multithreaded).
+- All state is **float32 / complex64**; spectral operators (`i*k`, the velocity
+  projector `i*k/|k|^2`, the viscous symbol `nu*|k|^2`) are precomputed once.
+- **CPU / GPU backend** (technique from `fast/turbo_simulator.py`): the same code
+  runs on the CPU via `scipy.fft` (multithreaded, `workers=-1`) or on an NVIDIA
+  GPU via CuPy + `cupyx.scipy.fft`.
+
+## GPU (NVIDIA, e.g. RTX 3090)
+
+The solver auto-detects CuPy and a CUDA device. On a GPU box install the extra:
+
+```bash
+uv sync --extra gpu          # CUDA 12.x; use cupy-cuda11x for CUDA 11
+```
+
+Then **Auto** uses the GPU (the `Compute` dropdown also offers explicit `CPU` /
+`GPU`; the window title shows the active device). With no CUDA device present the
+GPU option is greyed out and everything runs on the CPU.
 
 ## Fast rendering
 
@@ -42,6 +58,7 @@ color table is applied, and a `QPixmap` is built from it.
 | Field | Vorticity, Energy, U-Velocity, V-Velocity, Stream function |
 | Colors | Inferno, Gray, Ocean |
 | Frame / n steps | 2, 5, 10, 20, 50 |
+| Compute | Auto, CPU, GPU (GPU needs CuPy + a CUDA device) |
 
 `CFL`, `VR`, field, colors and frame skip update live; `N`, `Re`, `K0`, `NR`
 take effect on **Restart**.
