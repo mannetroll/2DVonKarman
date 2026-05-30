@@ -196,7 +196,7 @@ class MainWindow(QWidget):
         lay = QGridLayout(g)
         lay.setVerticalSpacing(8)
 
-        self.sl_NR, self.lb_NR = self._slider(2, 50, 40, self._on_nr)
+        self.sl_NR, self.lb_NR = self._slider(2, 50, 50, self._on_nr)
         self.sl_vr, self.lb_vr = self._slider(0, 30, 10, self._on_vr)
 
         self.lb_R = QLabel("-")
