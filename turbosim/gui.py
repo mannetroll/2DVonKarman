@@ -166,7 +166,7 @@ class MainWindow(QWidget):
         self.sp_Re = QSpinBox()
         self.sp_Re.setRange(1, 10_000_000)
         self.sp_Re.setSingleStep(1000)
-        self.sp_Re.setValue(20)
+        self.sp_Re.setValue(200)
 
         self.sl_cfl, self.lb_cfl = self._slider(50, 350, 250, self._on_cfl)
         self.sl_k0, self.lb_k0 = self._slider(0, 25, 2, self._on_k0)
@@ -197,7 +197,7 @@ class MainWindow(QWidget):
         lay.setVerticalSpacing(8)
 
         self.sl_NR, self.lb_NR = self._slider(5, 50, 25, self._on_nr)
-        self.sl_vr, self.lb_vr = self._slider(0, 30, 10, self._on_vr)
+        self.sl_vr, self.lb_vr = self._slider(0, 30, 20, self._on_vr)
 
         self.lb_R = QLabel("-")
         self.lb_R.setObjectName("statval")
