@@ -165,7 +165,15 @@ class Solver:
         self.Y = xp.asarray(Y)
 
     def _init_vorticity(self, seed: int | None) -> None:
-        """Random initial vorticity with energy peaked near wavenumber ``k0``."""
+        """Random initial vorticity with energy peaked near wavenumber ``k0``.
+
+        ``k0 == 0`` is a special case: the flow starts from rest (zero vorticity)
+        so the only structure comes from the free-stream sweeping past the rod.
+        """
+        if self.k0 <= 0:
+            self.omega_hat = self.xp.zeros((self.N, self.nh), dtype=self.cdt)
+            return
+
         # Phases are drawn on the host (deterministic NumPy RNG, seed-stable
         # across backends), then the field is moved to the backend and projected.
         rng = np.random.default_rng(seed)
