@@ -169,7 +169,7 @@ class MainWindow(QWidget):
         self.sp_Re.setValue(10_000)
 
         self.sl_cfl, self.lb_cfl = self._slider(50, 350, 250, self._on_cfl)
-        self.sl_k0, self.lb_k0 = self._slider(1, 25, 15, self._on_k0)
+        self.sl_k0, self.lb_k0 = self._slider(1, 25, 20, self._on_k0)
 
         # Compute backend: Auto picks the GPU (CuPy) if one is present, else CPU.
         self.cb_backend = QComboBox()
@@ -201,7 +201,7 @@ class MainWindow(QWidget):
         self.sp_NR.setValue(15)
         self.sp_NR.valueChanged.connect(self._on_nr)
 
-        self.sl_vr, self.lb_vr = self._slider(1, 100, 10, self._on_vr)
+        self.sl_vr, self.lb_vr = self._slider(1, 100, 30, self._on_vr)
 
         self.lb_R = QLabel("-")
         self.lb_R.setObjectName("statval")
