@@ -64,7 +64,8 @@ class SimWorker(QThread):
             dt_wall = now - self._last_emit
             self._last_emit = now
             if dt_wall > 0:
-                self._fps = 0.9 * self._fps + 0.1 * (1.0 / dt_wall)
+                steps_per_sec = self.frameskip / dt_wall
+                self._fps = 0.9 * self._fps + 0.1 * steps_per_sec
 
             stats = s.stats()
             stats["fps"] = self._fps
@@ -260,7 +261,7 @@ class MainWindow(QWidget):
         rows = [
             ("step", "step"), ("time", "time"), ("dt", "dt"),
             ("energy", "energy"), ("enstrophy", "enstrophy"),
-            ("max_omega", "max|omega|"), ("fps", "fps"),
+            ("max_omega", "max|omega|"), ("fps", "steps/s"),
         ]
         for i, (key, text) in enumerate(rows):
             name = QLabel(text)
