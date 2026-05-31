@@ -197,7 +197,7 @@ class MainWindow(QWidget):
         lay.setVerticalSpacing(8)
 
         self.sl_NR, self.lb_NR = self._slider(5, 50, 25, self._on_nr)
-        self.sl_vr, self.lb_vr = self._slider(0, 30, 1, self._on_vr)
+        self.sl_vr, self.lb_vr = self._slider(0, 30, 2, self._on_vr)
 
         self.lb_R = QLabel("-")
         self.lb_R.setObjectName("statval")

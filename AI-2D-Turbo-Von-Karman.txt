@@ -20,6 +20,6 @@ Re = 10000 (Visc = 1/Re)
 K0 = 1 (int slider from 1 to 25) initial field
 CFL = 2.5 (slider from 0.5 to 3.5)
 NR = 25 (width of rod R, as part of periodic field 2*pi = NR * R)
-VR = 1 (slider from 1 to 100) Velocity of rod in (2*pi/sec) in horizonal U-directions.
+VR = 2 (slider from 1 to 100) Velocity of rod in (2*pi/sec) in horizonal U-directions.
 Field = Vorticity, Energy, U-Velocity, V-Velocity & Stream function
 Show frame every n:th step = 2 (or 5 or 10 or 20 or 50)
