@@ -17,9 +17,9 @@ $ uv run simulation
 Controllable Input values:
 N = 512, 1024, 2048 (spectral nodes, 3/2 padding)
 Re = 10000 (Visc = 1/Re)
-K0 = 5 (int slider from 1 to 25) initial field
+K0 = 1 (int slider from 1 to 25) initial field
 CFL = 2.5 (slider from 0.5 to 3.5)
-NR = 10 (width of rod R, as part of periodic field 2*pi = NR * R)
+NR = 25 (width of rod R, as part of periodic field 2*pi = NR * R)
 VR = 10 (slider from 1 to 100) Velocity of rod in (2*pi/sec) in horizonal U-directions.
 Field = Vorticity, Energy, U-Velocity, V-Velocity & Stream function
 Show frame every n:th step = 2 (or 5 or 10 or 20 or 50)
