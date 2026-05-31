@@ -68,7 +68,7 @@ class Solver:
         cfl: float = 2.5,
         k0: int = 1,
         NR: float = 25.0,
-        vr: float = 10.0,
+        vr: float = 1.0,
         L: float = TWO_PI,
         seed: int | None = 1234,
         workers: int = -1,
