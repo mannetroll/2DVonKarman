@@ -6,6 +6,16 @@ domain centre, with a uniform **horizontal free-stream** flowing past it — i.e
 the rod's own reference frame as it translates horizontally (a von Karman-style
 obstacle / vortex street).
 
+## Screenshots
+
+The dark PySide6 GUI:
+
+![PySide6 GUI](https://raw.githubusercontent.com/mannetroll/2DVonKarman/v0.1.0/simulation_gui.png)
+
+The pure-ASCII terminal front-end:
+
+![ASCII vortex street](https://raw.githubusercontent.com/mannetroll/2DVonKarman/v0.1.0/simulation_ascii.png)
+
 ## Install
 
 ```bash
