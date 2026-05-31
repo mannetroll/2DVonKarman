@@ -81,7 +81,14 @@ class AsciiRenderer:
         self.lut = _build_color_lut(cmap)
         self._prev_rows: list[str | None] = [None] * ROWS
         self._umax_hist: deque[str] = deque(maxlen=14)
+        self.sps = 0.0  # solver steps/second (EMA of wall-clock throughput)
         self._build_geometry()
+
+    def update_rate(self, nsteps: int, elapsed: float) -> None:
+        """Fold one stepping interval into the steps/second EMA."""
+        if elapsed > 0:
+            inst = nsteps / elapsed
+            self.sps = inst if self.sps == 0.0 else 0.9 * self.sps + 0.1 * inst
 
     def _build_geometry(self) -> None:
         """Precompute the downsample block size, y-band and rod overlay mask."""
@@ -162,8 +169,8 @@ class AsciiRenderer:
             f"vorticity rms  upstream={rms_up:.3f}  "
             f"downstream(wake)={rms_down:.3f}  ratio={ratio:.2f}",
             f"umax over run: {list(self._umax_hist)}",
-            f"live: step={s.step_count}  t={s.time:.3f}  "
-            f"dt={s.last_dt:.2e}  wmax={wmax:.2f}  [{s.backend}]",
+            f"live: step={s.step_count}  t={s.time:.3f}  dt={s.last_dt:.2e}  "
+            f"wmax={wmax:.2f}  {self.sps:.1f} steps/s  [{s.backend}]",
         ]
 
     # -- frame assembly --
@@ -222,8 +229,10 @@ def _run(renderer: AsciiRenderer, nsteps: int, frames: int) -> None:
     drawn = 0
     try:
         while frames == 0 or drawn < frames:
+            t0 = time.perf_counter()
             for _ in range(nsteps):
                 solver.step()
+            renderer.update_rate(nsteps, time.perf_counter() - t0)
             out(renderer.frame())
             flush()
             drawn += 1
