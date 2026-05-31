@@ -9,8 +9,15 @@ obstacle / vortex street).
 ## Run
 
 ```bash
-uv run simulation
+uv run simulation          # the dark PySide6 GUI
+uv run simulation_ascii    # pure-ASCII vortex street in the terminal (no Qt)
 ```
+
+The ASCII front-end runs the same `N=512` solver and draws the vorticity field
+as a live 128×32 character grid (`" .:-=+*#%@"` brightness ramp, 256-color, the
+rod marked `o`), with a small diagnostics header. Flags: `--mono`, `--no-diff`,
+`--cmap {Inferno,Ocean,Gray}`, `--backend {auto,cpu,gpu}`, `--nsteps`,
+`--frames`, and the usual `--re/--vr/--nr/--cfl/--k0/--n`.
 
 ## Numerics
 
