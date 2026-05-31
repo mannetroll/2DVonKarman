@@ -1,16 +1,28 @@
 # Von Karman Vortex Street
 
-A 2D **decaying turbulence** pseudo-spectral solver with a fancy black PySide6 GUI,
+A 2D **decaying turbulence** pseudo-spectral solver, 
 simulating Navier-Stokes flow around a **cylindrical rod** held fixed at the
 domain centre, with a uniform **horizontal free-stream** flowing past it — i.e.
 the rod's own reference frame as it translates horizontally (a von Karman-style
 obstacle / vortex street).
+
+## Install
+
+```bash
+pip install mannetroll-vonkarman      # from PyPI
+```
+
+This installs two console scripts, `simulation` and `simulation_ascii`.
 
 ## Run
 
 ```bash
 uv run simulation          # the dark PySide6 GUI
 uv run simulation_ascii    # pure-ASCII vortex street in the terminal (no Qt)
+
+# or, once installed:
+simulation                 # the dark PySide6 GUI
+simulation_ascii           # pure-ASCII vortex street in the terminal (no Qt)
 ```
 
 The ASCII front-end runs the same `N=512` solver and draws the vorticity field
@@ -31,7 +43,7 @@ rod marked `o`), with a small diagnostics header. Flags: `--mono`, `--no-diff`,
   solved in the rod frame with a uniform horizontal free-stream `(VR, 0)`.
 - All state is **float32 / complex64**; spectral operators (`i*k`, the velocity
   projector `i*k/|k|^2`, the viscous symbol `nu*|k|^2`) are precomputed once.
-- **CPU / GPU backend** (technique from `fast/turbo_simulator.py`): the same code
+- **CPU / GPU backend** (technique from `cuda/turbo_simulator.py`): the same code
   runs on the CPU via `scipy.fft` (multithreaded, `workers=-1`) or on an NVIDIA
   GPU via CuPy + `cupyx.scipy.fft`.
 
@@ -40,7 +52,7 @@ rod marked `o`), with a small diagnostics header. Flags: `--mono`, `--no-diff`,
 The solver auto-detects CuPy and a CUDA device. On a GPU box install the extra:
 
 ```bash
-uv sync --extra gpu          # CUDA 12.x; use cupy-cuda11x for CUDA 11
+uv sync --extra cuda         # CUDA 13.x (cupy-cuda13x)
 ```
 
 Then **Auto** uses the GPU (the `Compute` dropdown also offers explicit `CPU` /
