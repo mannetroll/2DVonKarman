@@ -108,7 +108,7 @@ QLabel#hint { color: #6a6a76; }
 class MainWindow(QWidget):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("turbosim - 2D decaying turbulence")
+        self.setWindowTitle("Von Karman vortex street")
         self.setStyleSheet(DARK_QSS)
         self.resize(1180, 820)
 
@@ -351,7 +351,7 @@ class MainWindow(QWidget):
         self._on_nr(self.sl_NR.value())
         self._on_vr(self.sl_vr.value())
         self.lb_R.setText(f"{solver.R:.3f}")
-        self.setWindowTitle(f"turbosim - 2D decaying turbulence [{solver.backend.upper()}]")
+        self.setWindowTitle(f"Von Karman vortex street [{solver.backend.upper()}]")
 
         self.worker = SimWorker(solver)
         self.worker.frameskip = int(self.cb_skip.currentText())
