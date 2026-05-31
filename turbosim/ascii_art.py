@@ -264,8 +264,9 @@ def main() -> int:
     p.add_argument("--no-diff", action="store_true", help="redraw every row")
     args = p.parse_args()
 
+    # seed=None -> fresh OS entropy, so each run is a different street.
     solver = Solver(N=args.n, Re=args.re, cfl=args.cfl, k0=args.k0,
-                    NR=args.nr, vr=args.vr, backend=args.backend)
+                    NR=args.nr, vr=args.vr, seed=None, backend=args.backend)
     renderer = AsciiRenderer(solver, cmap=args.cmap, color=not args.mono,
                              diff=not args.no_diff)
 

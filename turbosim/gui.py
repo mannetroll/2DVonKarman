@@ -329,6 +329,7 @@ class MainWindow(QWidget):
             k0=self.sl_k0.value(),
             NR=float(self.sl_NR.value()),
             vr=float(self.sl_vr.value()),
+            seed=None,  # fresh OS entropy -> a different street on every (re)build
             backend=backend,
         )
 
