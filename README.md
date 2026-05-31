@@ -35,6 +35,20 @@ simulation                 # the dark PySide6 GUI
 simulation_ascii           # pure-ASCII vortex street in the terminal (no Qt)
 ```
 
+Run straight from PyPI without installing anything:
+
+```bash
+uv run --python 3.13 --with "mannetroll-vonkarman==0.1.0" simulation
+uv run --python 3.13 --with "mannetroll-vonkarman==0.1.0" simulation_ascii
+```
+
+Run the GPU build
+
+```bash
+uv run --python 3.13 --with "mannetroll-vonkarman[cuda]==0.1.0" simulation
+uv run --python 3.13 --with "mannetroll-vonkarman[cuda]==0.1.0" simulation_ascii
+```
+
 The ASCII front-end runs the same `N=512` solver and draws the vorticity field
 as a live 128×32 character grid (`" .:-=+*#%@"` brightness ramp, 256-color, the
 rod marked `o`), with a small diagnostics header. Flags: `--mono`, `--no-diff`,
