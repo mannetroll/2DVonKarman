@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from turbosim.backend import gpu_available
-from turbosim.solver import Solver, FIELD_NAMES
+from turbosim.solver import Solver, FIELD_NAMES, _ALPHA, _BETA
 from turbosim.render import display_limits, to_uint8
 from turbosim.colormaps import colormap, COLORMAP_NAMES
 
@@ -60,6 +60,38 @@ def test_get_field_returns_host_float32(stepped):
     f = s.get_field("Vorticity")
     # get_field always hands back a host NumPy float32 array, GPU or not.
     assert isinstance(f, np.ndarray) and f.dtype == np.float32
+
+
+def test_free_stream_advection_is_not_in_explicit_rhs():
+    kwargs = dict(N=32, Re=10000, cfl=1.0, k0=4, NR=10, seed=2, backend="cpu")
+    s0 = Solver(vr=0.0, **kwargs)
+    s1 = Solver(vr=25.0, **kwargs)
+    s1.omega_hat = s0.omega_hat.copy()
+
+    n0 = s0._nonlinear(s0.omega_hat)
+    n1 = s1._nonlinear(s1.omega_hat)
+
+    assert np.allclose(n0, n1)
+
+
+def test_free_stream_advection_uses_implicit_linear_symbol():
+    s = Solver(N=32, Re=1000, cfl=1.0, k0=0, NR=10, vr=10.0, seed=2, backend="cpu")
+    s._rod_mask = lambda: s.xp.zeros((s.N, s.N), dtype=s.rdt)
+
+    x = np.arange(s.N, dtype=np.float32) * np.float32(s.dxg)
+    X, _ = np.meshgrid(x, x, indexing="ij")
+    s.omega_hat = s._rfft2(np.cos(3.0 * X).astype(np.float32)).astype(s.cdt)
+    w0 = s.omega_hat.copy()
+
+    s.step()
+
+    linear = (s.nuK2 + 1j * np.float32(s.vr) * s.KX).astype(s.cdt)
+    factor = np.ones_like(s.omega_hat)
+    for alpha, beta in zip(_ALPHA, _BETA):
+        factor *= (1.0 - alpha * s.last_dt * linear) / (1.0 + beta * s.last_dt * linear)
+    expected = w0 * factor
+
+    assert np.allclose(s.omega_hat, expected, rtol=1e-5, atol=1e-3)
 
 
 @pytest.mark.skipif(gpu_available(), reason="a CUDA GPU is present")

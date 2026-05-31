@@ -9,9 +9,10 @@ Vorticity-streamfunction formulation on a doubly-periodic square domain
 * The nonlinear advection term is computed pseudo-spectrally with **3/2 zero
   padding** de-aliasing.
 * Time stepping is a **low-storage IMEX Runge-Kutta 3** scheme: the stiff linear
-  viscous term is integrated implicitly (Crank-Nicolson inside each substage),
-  the nonlinear term explicitly.  Only the previous substage's nonlinear
-  evaluation is stored (low storage).
+  viscous term and uniform free-stream advection are integrated implicitly
+  (Crank-Nicolson inside each substage), while only fluctuation advection is
+  explicit.  Only the previous substage's nonlinear evaluation is stored
+  (low storage).
 * A **cylindrical rod** (a disk of radius ``R``) is imposed through volume
   penalization, applied as an exact, unconditionally-stable operator-splitting
   velocity relaxation after each full step.  We work in the **rod's reference
@@ -247,13 +248,13 @@ class Solver:
 
     # --------------------------------------------------------------- dynamics
     def _nonlinear(self, omega_hat):
-        """Explicit RHS: ``-(u . grad) omega`` with 3/2 de-aliasing.
+        """Explicit RHS: ``-(u' . grad) omega`` with 3/2 de-aliasing.
 
-        The advecting velocity is the *total* velocity, i.e. the vortical part
-        plus the uniform horizontal free-stream ``(vr, 0)``.
+        The uniform free-stream contribution ``vr * d(omega)/dx`` is linear and
+        is handled implicitly with viscosity in :meth:`step`.
         """
         u_hat, v_hat = self._velocities(omega_hat)
-        u = self._to_phys_padded(u_hat) + self.vr
+        u = self._to_phys_padded(u_hat)
         v = self._to_phys_padded(v_hat)
         ox = self._to_phys_padded(self.iKX * omega_hat)
         oy = self._to_phys_padded(self.iKY * omega_hat)
@@ -288,16 +289,19 @@ class Solver:
         # Rod is fixed at the domain centre (rod reference frame).
         chi = self._rod_mask()
 
-        # --- LS-IMEX-RK3 advance of the pure decaying Navier-Stokes -------
+        # --- LS-IMEX-RK3 advance of Navier-Stokes ------------------------
+        # Linear implicit symbol for d(w)/dt = -S*w + N(w), where S contains
+        # viscosity plus uniform free-stream advection in the rod frame.
+        linear = (nuK2 + 1j * np.float32(self.vr) * self.KX).astype(self.cdt)
         w = self.omega_hat
         n_prev = None
         for k in range(3):
             n_k = self._nonlinear(w)
             if n_prev is None:
                 n_prev = n_k
-            num = (1.0 - _ALPHA[k] * dt * nuK2) * w \
+            num = (1.0 - _ALPHA[k] * dt * linear) * w \
                 + dt * (_GAMMA[k] * n_k + _ZETA[k] * n_prev)
-            w = num / (1.0 + _BETA[k] * dt * nuK2)
+            w = num / (1.0 + _BETA[k] * dt * linear)
             n_prev = n_k
         self.omega_hat = w
 

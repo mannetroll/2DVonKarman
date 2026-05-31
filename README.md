@@ -17,8 +17,9 @@ uv run simulation
 - Doubly-periodic domain `[0, 2*pi)^2`, vorticity-streamfunction formulation.
 - Pure decaying Navier-Stokes (`Visc = 1/Re`) — no forcing, no extra terms.
 - Pseudo-spectral nonlinear term with **3/2 zero-padding** de-aliasing.
-- **LS-IMEX-RK3** time stepping: viscous term implicit (Crank-Nicolson per
-  substage), advection explicit, low storage.
+- **LS-IMEX-RK3** time stepping: viscous term and uniform free-stream advection
+  implicit (Crank-Nicolson per substage), fluctuation advection explicit,
+  low storage.
 - Centred rod via **volume penalization** (exact relaxation, operator-split);
   solved in the rod frame with a uniform horizontal free-stream `(VR, 0)`.
 - All state is **float32 / complex64**; spectral operators (`i*k`, the velocity
