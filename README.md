@@ -1,10 +1,12 @@
 # Von Karman Vortex Street
 
-A 2D **decaying turbulence** pseudo-spectral solver, 
+A 2D **decaying turbulence** pseudo-spectral solver,
 simulating Navier-Stokes flow around a **cylindrical rod** held fixed at the
 domain centre, with a uniform **horizontal free-stream** flowing past it — i.e.
 the rod's own reference frame as it translates horizontally (a von Karman-style
 obstacle / vortex street).
+
+Source code: https://github.com/mannetroll/2DVonKarman
 
 ## Screenshots
 
@@ -42,7 +44,7 @@ uv run --python 3.13 --with "mannetroll-vonkarman==0.1.0" simulation
 uv run --python 3.13 --with "mannetroll-vonkarman==0.1.0" simulation_ascii
 ```
 
-Run the GPU build
+Run the GPU build (NVIDIA + CUDA only):
 
 ```bash
 uv run --python 3.13 --with "mannetroll-vonkarman[cuda]==0.1.0" simulation
