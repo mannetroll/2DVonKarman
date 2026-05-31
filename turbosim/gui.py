@@ -9,12 +9,14 @@ digits never reflow or flicker.
 
 from __future__ import annotations
 
+import sys
 import time
+from pathlib import Path
 
 import numpy as np
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import (
-    QColor, QFont, QFontDatabase, QImage, QPainter, QPen, QPixmap,
+    QColor, QFont, QFontDatabase, QIcon, QImage, QPainter, QPen, QPixmap,
 )
 from PySide6.QtWidgets import (
     QApplication, QComboBox, QFrame, QGridLayout, QGroupBox, QHBoxLayout,
@@ -108,7 +110,8 @@ QLabel#hint { color: #6a6a76; }
 class MainWindow(QWidget):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Von Karman vortex street")
+        self.setWindowTitle("Von Karman vortex street @ Mannetroll")  # replaced at runtime
+        self.setWindowIcon(_app_icon())
         self.setStyleSheet(DARK_QSS)
         self.resize(1180, 820)
 
@@ -352,7 +355,9 @@ class MainWindow(QWidget):
         self._on_nr(self.sl_NR.value())
         self._on_vr(self.sl_vr.value())
         self.lb_R.setText(f"{solver.R:.3f}")
-        self.setWindowTitle(f"Von Karman vortex street [{solver.backend.upper()}]")
+        self.setWindowTitle(
+            f"Von Karman vortex street [{solver.backend.upper()}] @ Mannetroll"
+        )
 
         self.worker = SimWorker(solver)
         self.worker.frameskip = int(self.cb_skip.currentText())
@@ -427,9 +432,18 @@ def _mono_font(size: int = 10) -> QFont:
     return font
 
 
+def _app_icon() -> QIcon:
+    """Platform-appropriate window/taskbar icon shipped with the package."""
+    here = Path(__file__).resolve().parent
+    name = "turbosim.icns" if sys.platform == "darwin" else "turbosim.ico"
+    path = here / name
+    return QIcon(str(path)) if path.exists() else QIcon()
+
+
 def run() -> int:
     app = QApplication.instance() or QApplication([])
     app.setFont(_mono_font(10))
+    app.setWindowIcon(_app_icon())
     win = MainWindow()
     win.show()
     return app.exec()

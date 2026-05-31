@@ -1,4 +1,4 @@
-# turbosim
+# Von Karman Vortex Street
 
 A 2D **decaying turbulence** pseudo-spectral solver with a fancy black PySide6 GUI,
 simulating Navier-Stokes flow around a **cylindrical rod** held fixed at the
