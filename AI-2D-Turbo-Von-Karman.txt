@@ -2,7 +2,7 @@ Create a 2D-Turbulence solver in Python, in a root package named vortex.
 with a PySide6 GUI showing the changing Vorticity field using Ocean, Gray or Inferno colors,
 with controls and statistics grouped in a nice clear way.
 Make a fancy GUI with no flickering numerical data.
-Show FPS of solver iterations per second (wall time) in the GUI.
+Add FPS of solver iterations per second (wall time) in the GUI.
 
 With normal decaying Navier-Stokes without any type of forcing or extra terms,
 decaying around a moving cylindrical rod with radius R. Positioned to the left.
